@@ -1,43 +1,43 @@
 const { Router } = require("express");
 
-const adminRouter = Router();
+const creatorRouter = Router();
 
-adminRouter.post("/signup", function (req, res){
+creatorRouter.post("/signup", function (req, res){
     res.json({
         message: "signup endpoint"
     })
 })
 
-adminRouter.post("/signin", function (req, res){
+creatorRouter.post("/signin", function (req, res){
     res.json({
         message: "signin endpoint"
     })
 })
 
-adminRouter.post("/course", function (req, res){
+creatorRouter.post("/course", function (req, res){
     res.json({
         message: "course endpoint"
     })
 })
 
-adminRouter.delete("/course", function (req, res){
+creatorRouter.delete("/course", function (req, res){
     res.json({
         message: "course endpoint"
     })
 })
 
-adminRouter.put("/course", function (req, res){
+creatorRouter.put("/course", function (req, res){
     res.json({
         message: "course endpoint"
     })
 })
 
-adminRouter.get("/course/bulk", function (req, res){
+creatorRouter.get("/course/bulk", function (req, res){
     res.json({
         message: "course endpoint"
     })
 })
 
 module.exports = {
-    adminRouter
+    creatorRouter
 }
