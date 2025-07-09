@@ -14,25 +14,25 @@ creatorRouter.post("/signin", function (req, res){
     })
 })
 
-creatorRouter.post("/course", function (req, res){
+creatorRouter.post("/", function (req, res){
     res.json({
         message: "course endpoint"
     })
 })
 
-creatorRouter.delete("/course", function (req, res){
+creatorRouter.delete("/", function (req, res){
     res.json({
         message: "course endpoint"
     })
 })
 
-creatorRouter.put("/course", function (req, res){
+creatorRouter.put("/", function (req, res){
     res.json({
         message: "course endpoint"
     })
 })
 
-creatorRouter.get("/course/bulk", function (req, res){
+creatorRouter.get("//bulk", function (req, res){
     res.json({
         message: "course endpoint"
     })
