@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 const { userRouter } = require("./routes/user.routes");
 const { courseRouter } = require("./routes/course.routes");
 const { creatorRouter } = require("./routes/creator.routes");
+const mongoose = require("mongoose");
 
 dotenv.config();
 const app = express();
@@ -12,4 +13,10 @@ app.use("/api/v1/user", userRouter);
 app.use("/api/v1/creator", creatorRouter);
 app.use("api/v1/course", courseRouter);
 
-app.listen(process.env.PORT || 3000);
+
+async function main() {
+    await mongoose.connect((process.env.MONGODB_URL + process.env.DATABASE))
+    app.listen(process.env.PORT || 3000);
+}
+
+main();
