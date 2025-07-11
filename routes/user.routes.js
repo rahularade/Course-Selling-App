@@ -1,4 +1,4 @@
-const { Router }  = require("express");
+const { Router } = require("express");
 const { User, Purchase, Course } = require("../db");
 const bcrypt = require("bcrypt");
 const { z } = require("zod");
@@ -7,104 +7,134 @@ const { auth } = require("../middlewares/user");
 
 const userRouter = Router();
 
-userRouter.post("/signup", async function(req, res) {
+userRouter.post("/signup", async function (req, res) {
+    const passwordSchema = z
+        .string()
+        .trim()
+        .min(8, { message: "Password must be at least 8 characters long" })
+        .max(30, { message: "Password must be at most 30 characters long" })
+        .regex(/[A-Z]/, {
+            message: "Password must contain at least one uppercase letter",
+        })
+        .regex(/[a-z]/, {
+            message: "Password must contain at least one lowercase letter",
+        })
+        .regex(/[0-9]/, { message: "Password must contain at least one digit" })
+        .regex(/[^A-Za-z0-9]/, {
+            message: "Password must contain at least one special character",
+        });
+
     const requireBody = z.object({
-        firstName: z.string().trim().min(3).max(30),
-        lastName: z.string().trim().min(3).max(30),
-        email: z.string().trim().email(),
-        password: z.string().trim().min(8).max(30),
-    })
+        firstName: z
+            .string()
+            .trim()
+            .min(3, "Firstname must contain at least 3 character(s)")
+            .max(30, "Firstname must contain at most 30 character(s)"),
+        lastName: z
+            .string()
+            .trim()
+            .min(3, "Lastname must contain at least 3 character(s)")
+            .max(30, "Lastname must contain at most 30 character(s)"),
+        email: z.string().trim().email("Invalid email address"),
+        password: passwordSchema,
+    });
 
     const parsedData = requireBody.safeParse(req.body);
-    if(!parsedData.success){
+    if (!parsedData.success) {
         res.status(402).json({
-            message: parsedData.error.issues[0].message
-        })
+            message: parsedData.error.issues[0].message,
+        });
         return;
     }
 
-    const {firstName, lastName, email, password} = req.body;
-    const existedUser = await User.findOne({ email })
+    const { firstName, lastName, email, password } = req.body;
+    const existedUser = await User.findOne({ email });
 
-    if(existedUser){
+    if (existedUser) {
         res.status(400).json({
-            message: "Email already exists"
-        })
+            message: "Email already exists",
+        });
         return;
     }
 
     const hashedPassword = await bcrypt.hash(password, 9);
 
-    try{
+    try {
         await User.create({
             firstName,
             lastName,
             email,
-            password: hashedPassword
-        })
-    } catch(e) {
+            password: hashedPassword,
+        });
+    } catch (e) {
         res.status(500).json({
-            message: "Something went wrong"
-        })
+            message: "Something went wrong",
+        });
         return;
     }
-    
+
     res.json({
-        message: "User registered successfully"
+        message: "User registered successfully",
+    });
+});
+
+userRouter.post("/signin", async function (req, res) {
+    const requireBody = z.object({
+        email: z.string().trim().email("Invalid email address"),
+        password: z.string().trim().min(8, "Password must be at least 8 characters"),
     })
-})
 
-userRouter.post("/signin", async function(req, res) {
-    const {email, password} = req.body;
+    const user = await User.findOne({ email });
 
-    const user = await User.findOne({email});
-
-    if(!user) {
+    if (!user) {
         res.status(404).json({
-            message:"User does not exist"
-        })
+            message: "User does not exist",
+        });
         return;
     }
 
-    const passwordMatch = await bcrypt.compare(password, user.password)
+    const passwordMatch = await bcrypt.compare(password, user.password);
 
-    if(!passwordMatch) {
+    if (!passwordMatch) {
         res.status(401).json({
-            message: "Invalid credentials"
-        })
+            message: "Invalid credentials",
+        });
         return;
     }
 
-    const token = jwt.sign({
-        id: user._id
-    }, process.env.JWT_USER_SECRET)
+    const token = jwt.sign(
+        {
+            id: user._id,
+        },
+        process.env.JWT_USER_SECRET
+    );
 
     res.json({
-        token
-    })
-})
+        token,
+    });
+});
 
-userRouter.get("/purchases", auth, async function(req, res) {
+userRouter.get("/purchases", auth, async function (req, res) {
     const userId = req.userId;
 
-    const purchases = await Purchase.find({userId})
+    const purchases = await Purchase.find({ userId });
 
-    if(purchases.length === 0){
+    if (purchases.length === 0) {
         res.status(404).json({
-            message: "Purchases not found"
-        })
+            message: "Purchases not found",
+        });
         return;
     }
 
     const courses = await Promise.all(
-        purchases.map(purchase => Course.findById(purchase.courseId))
+        purchases.map((purchase) => Course.findById(purchase.courseId))
     );
 
     res.json({
-        courses
-    })
-})
+        courses,
+    });
+});
 
 module.exports = {
-    userRouter
-}
+    userRouter,
+};

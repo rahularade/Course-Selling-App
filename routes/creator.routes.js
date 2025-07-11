@@ -8,11 +8,35 @@ const { auth } = require("../middlewares/creator");
 const creatorRouter = Router();
 
 creatorRouter.post("/signup", async function (req, res) {
+    const passwordSchema = z
+        .string()
+        .trim()
+        .min(8, { message: "Password must be at least 8 characters long" })
+        .max(30, { message: "Password must be at most 30 characters long" })
+        .regex(/[A-Z]/, {
+            message: "Password must contain at least one uppercase letter",
+        })
+        .regex(/[a-z]/, {
+            message: "Password must contain at least one lowercase letter",
+        })
+        .regex(/[0-9]/, { message: "Password must contain at least one digit" })
+        .regex(/[^A-Za-z0-9]/, {
+            message: "Password must contain at least one special character",
+        });
+
     const requireBody = z.object({
-        firstName: z.string().trim().min(3).max(30),
-        lastName: z.string().trim().min(3).max(30),
-        email: z.string().trim().email(),
-        password: z.string().trim().min(8).max(30),
+        firstName: z
+            .string()
+            .trim()
+            .min(3, "Firstname must contain at least 3 character(s)")
+            .max(30, "Firstname must contain at most 30 character(s)"),
+        lastName: z
+            .string()
+            .trim()
+            .min(3, "Lastname must contain at least 3 character(s)")
+            .max(30, "Lastname must contain at most 30 character(s)"),
+        email: z.string().trim().email("Invalid email address"),
+        password: passwordSchema,
     });
 
     const parsedData = requireBody.safeParse(req.body);
@@ -55,7 +79,23 @@ creatorRouter.post("/signup", async function (req, res) {
 });
 
 creatorRouter.post("/signin", async function (req, res) {
-    const { email, password } = req.body;
+    const requireBody = z.object({
+        email: z.string().trim().email("Invalid email address"),
+        password: z.string().trim().min(8, "Password must be at least 8 characters"),
+    })
+    
+    const parsedData =  emailSchema.safeParse(req.body.email);
+
+    if(!parsedData.success){
+        res.status(403).json({
+            message: parsedData.error.issues[0].message
+        })
+        return;
+    }
+
+
+    const { email, password } = parsedData.data;
+
 
     const creator = await Creator.findOne({ email });
 
@@ -92,7 +132,7 @@ creatorRouter.post("/course", auth, async function (req, res) {
         title: z.string().trim().min(3).max(100),
         description: z.string().trim().min(3).max(100),
         price: z.number(),
-        imageUrl: z.string().trim().min(3).max(100),
+        imageUrl: z.string().trim().min(3),
     });
 
     const parsedData = requireBody.safeParse(req.body);
@@ -156,7 +196,7 @@ creatorRouter.put("/course", auth, async function (req, res) {
         title: z.string().trim().min(3).max(100),
         description: z.string().trim().min(3).max(100),
         price: z.number(),
-        imageUrl: z.string().trim().min(3).max(100),
+        imageUrl: z.string().trim().min(3),
         courseId: z.string().trim().min(1)
     });
 
