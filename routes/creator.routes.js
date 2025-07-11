@@ -129,7 +129,14 @@ creatorRouter.post("/course", auth, async function (req, res) {
 creatorRouter.delete("/course", auth, async function (req, res) {
     const courseId = req.body.courseId;
 
-    const course = await Course.findByIdAndDelete(courseId);
+    try {       
+        const course = await Course.findByIdAndDelete(courseId);
+    } catch (e) {
+        res.status(404).json({
+            message: "Course not found",
+        });
+        return;
+    }
 
     if (!course) {
         res.status(404).json({
