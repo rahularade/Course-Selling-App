@@ -5,11 +5,13 @@ const { courseRouter } = require("./routes/course.routes");
 const { creatorRouter } = require("./routes/creator.routes");
 const mongoose = require("mongoose");
 const { apiLimiter } = require("./middlewares/ratelimiter");
+const cookieParser = require("cookie-parser")
 
 dotenv.config();
 const app = express();
 app.use(express.json())
 app.use(apiLimiter)
+app.use(cookieParser())
 
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/creator", creatorRouter);

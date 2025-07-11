@@ -83,7 +83,17 @@ userRouter.post("/signin", async function (req, res) {
         email: z.string().trim().email("Invalid email address"),
         password: z.string().trim().min(8, "Password must be at least 8 characters"),
     })
+    
+    const parsedData =  requireBody.safeParse(req.body);
 
+    if(!parsedData.success){
+        res.status(403).json({
+            message: parsedData.error.issues[0].message
+        })
+        return;
+    }
+
+    const { email, password } = parsedData.data;
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -109,8 +119,15 @@ userRouter.post("/signin", async function (req, res) {
         process.env.JWT_USER_SECRET
     );
 
-    res.json({
-        token,
+    const options = {
+        httpOnly : true,
+        secure: true
+    }
+
+    res
+    .cookie("token", token, options)
+    .json({
+        message: "User signed in successfully"
     });
 });
 

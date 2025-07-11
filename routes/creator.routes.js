@@ -84,7 +84,7 @@ creatorRouter.post("/signin", async function (req, res) {
         password: z.string().trim().min(8, "Password must be at least 8 characters"),
     })
     
-    const parsedData =  emailSchema.safeParse(req.body.email);
+    const parsedData =  requireBody.safeParse(req.body);
 
     if(!parsedData.success){
         res.status(403).json({
@@ -93,9 +93,7 @@ creatorRouter.post("/signin", async function (req, res) {
         return;
     }
 
-
     const { email, password } = parsedData.data;
-
 
     const creator = await Creator.findOne({ email });
 
@@ -122,8 +120,14 @@ creatorRouter.post("/signin", async function (req, res) {
         process.env.JWT_CREATOR_SECRET
     );
 
-    res.json({
-        token,
+    const options = {
+        httpOnly : true,
+        secure: true
+    }
+    res
+    .cookie("token", token, options)
+    .json({
+        message: "Creator signed in successfully"
     });
 });
 
