@@ -4,10 +4,12 @@ const { userRouter } = require("./routes/user.routes");
 const { courseRouter } = require("./routes/course.routes");
 const { creatorRouter } = require("./routes/creator.routes");
 const mongoose = require("mongoose");
+const { apiLimiter } = require("./middlewares/ratelimiter");
 
 dotenv.config();
 const app = express();
 app.use(express.json())
+app.use(apiLimiter)
 
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/creator", creatorRouter);
